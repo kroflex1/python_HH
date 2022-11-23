@@ -331,7 +331,7 @@ class Report:
 
 
 
-data_type = input('Выберите метод работы:')
+data_type = input('Выберите метод работы: ')
 dataset = DataSet()
 statistical_data_processor = StatisticalDataProcessor(dataset)
 report = Report()
