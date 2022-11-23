@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        table {
+            width: 100%;
+            margin: 0;
+            table-layout: fixed;
+            border-collapse: collapse;
+            border: 1px solid black;
+            border-collapse: collapse;
+        }
+
+
+        th,
+        td {
+            padding: 5px;
+            border: 1px solid black;
+            text-align: center;
+        }
+
+        th {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        td {
+            text-align: center;
+        }
+
+        .year-table th:nth-child(1) {
+            width: 5%;
+
+        }
+
+        .year-table th:nth-child(2) {
+            width: 20%;
+        }
+
+        .year-table th:nth-child(3) {
+            width: 25%;
+        }
+
+        .year-table th:nth-child(4) {
+            width: 20%;
+        }
+
+        .year-table th:nth-child(5) {
+            width: 30%;
+        }
+
+
+        .column {
+            box-sizing: border-box;
+            float: left;
+            width: 50%;
+            padding: 0 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1 style="text-align: center;">Аналитика по зарплатам и городам для профессии {{ name_of_profession }}!</h1>
+    <img src="file:///C:/Users/Kroflex/Desktop/Ver3/graph.png" alt="">
+    <h2 style="text-align: center;">Статистика по годам</h2>
+    <table class="year-table">
+        <tr>
+            <th>{{heads1[0]}}</th>
+            <th>{{heads1[1]}}</th>
+            <th>{{heads1[2]}}</th>
+            <th>{{heads1[3]}}</th>
+            <th>{{heads1[4]}}</th>
+        </tr>
+        {% for key, value in salary_by_years.items() %}
+        <tr>
+            <td>{{key}}</td>
+            <td>{{value}}</td>
+            <td>{{vac_salary_by_years[key]}}</td>
+            <td>{{vacs_by_years[key]}}</td>
+            <td>{{vac_count_by_years[key]}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h2 style="text-align: center;">Статистика по городам</h2>
+    <div class="container">
+        <div class="column">
+            <table>
+                <tr>
+                    <th>{{heads2[0]}}</th>
+                    <th>{{heads2[1]}}</th>
+                </tr>
+                {% for key, value in city_salary.items() %}
+                <tr>
+                    <td>{{key}}</td>
+                    <td>{{value}}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+
+        <div class="column">
+            <table>
+                <tr>
+                    <th>{{heads2[2]}}</th>
+                    <th>{{heads2[3]}}</th>
+                </tr>
+                {% for key, value in vacancy_rate.items() %}
+                <tr>
+                    <td>{{key}}</td>
+                    <td>{{value}}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+
+</body>
+
+</html>
