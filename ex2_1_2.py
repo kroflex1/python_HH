@@ -238,7 +238,8 @@ class Report:
                label=f'Количество вакансий\n{name_of_profession.lower()}')
 
         ax.set_xticks(x_nums, vacancy_by_years.keys(), rotation="vertical")
-        ax.legend(fontsize=8, borderpad=0)
+        ax.tick_params(axis="x", labelsize=8)
+        ax.legend(fontsize=8, loc='upper left')
         ax.grid(True, axis="y")
 
     def draw_city_salary_graph(self, fig, salary_by_city):
@@ -252,7 +253,7 @@ class Report:
 
         cities = list(reversed(list(map(lambda item: self.format_city(item), salary_by_city.keys()))))
         ax.set_yticks(x_nums, cities)
-        ax.tick_params(axis="y", labelsize=6)
+        ax.tick_params(axis="y", labelsize=8)
         ax.tick_params(axis="x", labelsize=8)
         ax.grid(True, axis="x")
 
@@ -261,8 +262,7 @@ class Report:
         vacancy_rate = dict(sorted(vacancy_rate.items(), key=lambda item: item[1]))
         ax = fig.add_subplot(224)
         ax.set_title("Доля вакансий по городам")
-        # pie_colors = ['tab:orange', 'tab:blue', 'tab:green', 'tab:red', 'tab:red', 'tab:purple', 'tab:brown', 'tab:pink', 'tab:grey', 'tab:pink']
-        ax.pie(vacancy_rate.values(), labels=vacancy_rate.keys(), textprops={'fontsize': 6}, colors=pie_colors)
+        ax.pie(vacancy_rate.values(), labels=vacancy_rate.keys(), textprops={'fontsize': 6})
         ax.axis("equal")
 
     def generate_exel(self, year_statistics, city_statistics, name_of_profession):
@@ -333,30 +333,12 @@ class Report:
         return city
 
 
-# dataset = DataSet()
-# statistical_data_processor = StatisticalDataProcessor(dataset)
-# statistical_data_processor.print_statistic()
-#
-# report = Report()
-# report.generate_image(statistical_data_processor.get_final_year_statistics(),
-#                       statistical_data_processor.get_final_city_statistics(),
-#                       statistical_data_processor.name_of_profession)
-
-
-year_statistics = [
-    {2007: 38916, 2008: 43646, 2009: 42492, 2010: 43846, 2011: 47451, 2012: 48243, 2013: 51510, 2014: 50658},
-    {2007: 43770, 2008: 50412, 2009: 46699, 2010: 50570, 2011: 55770, 2012: 57960, 2013: 58804, 2014: 62384},
-    {2007: 2196, 2008: 17549, 2009: 17709, 2010: 29093, 2011: 36700, 2012: 44153, 2013: 59954, 2014: 66837},
-    {2007: 317, 2008: 2460, 2009: 2066, 2010: 3614, 2011: 4422, 2012: 4966, 2013: 5990, 2014: 5492}
-]
-
-city_statistics = [
-    {'Москва': 57354, 'Санкт - Петербург': 46291, 'Новосибирск': 41580, 'Екатеринбург': 41091, 'Казань': 37587,
-     'Самара': 34091, 'Нижний Новгород': 33637, 'Ярославль': 32744, 'Краснодар': 32542, 'Воронеж': 29725},
-    {'Москва': 0.4581, 'Санкт - Петербург': 0.1415, 'Нижний Новгород': 0.0269, 'Казань': 0.0266,
-     'Ростов - на - Дону': 0.0234, 'Новосибирск': 0.0202, 'Екатеринбург': 0.0143, 'Воронеж': 0.014, 'Самара': 0.0133,
-     'Краснодар': 0.0131}
-]
+dataset = DataSet()
+statistical_data_processor = StatisticalDataProcessor(dataset)
+statistical_data_processor.print_statistic()
 
 report = Report()
-report.generate_image(year_statistics, city_statistics, "Программист")
+report.generate_image(statistical_data_processor.get_final_year_statistics(),
+                       statistical_data_processor.get_final_city_statistics(),
+                      statistical_data_processor.name_of_profession)
+
