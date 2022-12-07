@@ -8,8 +8,30 @@
 ![1](https://user-images.githubusercontent.com/48649189/206187260-b311e32d-a207-4ae8-a7cb-a1a2ca697f62.png)
 
 ##Изменим скорость работы преобразования даты
-![image](https://user-images.githubusercontent.com/48649189/206187614-f4dc312c-675f-4aed-8910-054c489ac13c.png)
+```Python
+from datetime import datetime
 
+def get_year_1(date_string):
+    year = datetime.strptime(date_string, '%Y-%m-%dT%H:%M:%S%z').year
+    return year
+
+def get_year_2(date_string):
+    year = int(date_string.split("-")[0])
+    return year
+
+def get_year_3(date_string):
+    year = int(date_string[:4])
+    return year
+
+date_string =  '2022-05-31T17:32:31+0300'
+
+for i in range(1000000):
+    get_year_1(date_string)
+for i in range(1000000):
+    get_year_2(date_string)
+for i in range(1000000):
+    get_year_3(date_string)
+```
 ##Измерим скорость выполнения функций
 ![image](https://user-images.githubusercontent.com/48649189/206188128-c88ffa03-127a-4a1d-924b-fd17a13dcecc.png)
 
