@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <style>
+
         table {
             width: 100%;
             margin: 0;
@@ -16,6 +17,10 @@
             border-collapse: collapse;
         }
 
+        .main_title {
+            text-align: center;
+            font-size: 50px;
+        }
 
         th,
         td {
@@ -65,7 +70,7 @@
 </head>
 
 <body>
-    <h1 style="text-align: center;">Аналитика по зарплатам и городам для профессии {{ name_of_profession }}!</h1>
+    <h1 class="main_title">Аналитика по зарплатам и городам для профессии {{ name_of_profession }}</h1>
     <img src="file:///C:/Users/Kroflex/Desktop/Ver3/graph.png" alt="">
     <h2 style="text-align: center;">Статистика по годам</h2>
     <table class="year-table">

@@ -1,5 +1,5 @@
 import unittest
-from Program import DataSet
+from main import DataSet
 
 
 class MyTestCase(unittest.TestCase):

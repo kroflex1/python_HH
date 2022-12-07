@@ -1,5 +1,5 @@
 import unittest
-from Program import Report
+from main import Report
 
 class MyTestCase(unittest.TestCase):
     def test_format_city_1(self):

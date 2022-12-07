@@ -1,5 +1,5 @@
 import unittest
-from Program import StatisticalDataProcessor
+from main import StatisticalDataProcessor
 
 
 class MyTestCase(unittest.TestCase):
