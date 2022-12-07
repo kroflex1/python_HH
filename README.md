@@ -7,7 +7,7 @@
 Замеры вывода времени работы по выводу таблицы таблицы
 ![1](https://user-images.githubusercontent.com/48649189/206187260-b311e32d-a207-4ae8-a7cb-a1a2ca697f62.png)
 
-##Изменим скорость работы преобразования даты
+##Варианты преобразования даты
 ```Python
 from datetime import datetime
 
