@@ -7,7 +7,7 @@
 Замеры вывода времени работы по выводу таблицы таблицы
 ![1](https://user-images.githubusercontent.com/48649189/206187260-b311e32d-a207-4ae8-a7cb-a1a2ca697f62.png)
 
-##Варианты преобразования даты
+## Варианты преобразования даты
 ```Python
 from datetime import datetime
 
@@ -32,7 +32,7 @@ for i in range(1000000):
 for i in range(1000000):
     get_year_3(date_string)
 ```
-##Измерим скорость выполнения функций
+## Измерим скорость выполнения функций
 ![image](https://user-images.githubusercontent.com/48649189/206188128-c88ffa03-127a-4a1d-924b-fd17a13dcecc.png)
 
 **Самая быстрая функция это get_year_3**
