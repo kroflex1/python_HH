@@ -37,7 +37,9 @@ for i in range(1000000):
 
 **Самая быстрая функция это get_year_3**
 ![4](https://user-images.githubusercontent.com/48649189/206187923-27b34e98-44f0-4c82-a3c4-f4eae3768c46.png)
+
 **После неё идёт функция get_year_2**
 ![3](https://user-images.githubusercontent.com/48649189/206188015-89bbcc66-d69a-4bf6-a8ea-c08dc34c57ff.png)
+
 **Самой же медленной является функция get_year_1**
-![2](https://user-images.githubusercontent.com/48649189/206188239-2aede464-983a-4c7b-93d6-8cd0cdcebd21.png
+![2](https://user-images.githubusercontent.com/48649189/206188239-2aede464-983a-4c7b-93d6-8cd0cdcebd21.png)
