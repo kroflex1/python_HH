@@ -1,9 +1,11 @@
 import math
 import pandas as pd
 import multiprocessing
+import concurrent.futures
 import os.path
 
 from Separator import Separator
+
 
 class StatisticalDataProcessor:
     """Класс для представления статистики по вакансиям.
@@ -25,7 +27,7 @@ class StatisticalDataProcessor:
         self.name_of_profession = input("Введите название профессии:  ")
 
         separator = Separator(self.file_name)
-        self.years = separator.unique_years
+        self.years = list(separator.unique_years)
         self.folder_name = separator.folder_name
         self.main_df = separator.main_df
 
@@ -52,30 +54,26 @@ class StatisticalDataProcessor:
         """Добавляет в словари статистик значения из файла
         """
         processes = []
-        manager = multiprocessing.Manager()
-        return_dict = manager.dict()
-        for year in self.years:
-            process = multiprocessing.Process(target=self.get_statistic_by_year, args=(year, return_dict))
-            processes.append(process)
-            process.start()
+        with concurrent.futures.ProcessPoolExecutor(max_workers=3) as executor:
+            wait_complete = []
+            for task in self.years:
+                future = executor.submit(self.get_statistic_by_year, task)
+                wait_complete.append(future)
 
-        for process in processes:
-            process.join()
-
-        for year, value in return_dict.items():
-            self.average_salary[year] = value[0]
-            self.number_of_vacancies[year] = value[1]
-            self.average_salary_profession[year] = value[2]
-            self.number_of_vacancies_profession[year] = value[3]
+        for res in concurrent.futures.as_completed(wait_complete):
+            result = res.result()
+            year = result[0]
+            self.average_salary[year] = result[1]
+            self.number_of_vacancies[year] = result[2]
+            self.average_salary_profession[year] = result[3]
+            self.number_of_vacancies_profession[year] = result[4]
 
         self.average_salary = dict(sorted(self.average_salary.items()))
         self.number_of_vacancies = dict(sorted(self.number_of_vacancies.items()))
-        self.average_salary_profession = dict(
-            sorted(self.average_salary_profession.items()))
-        self.number_of_vacancies_profession = dict(
-            sorted(self.number_of_vacancies_profession.items()))
+        self.average_salary_profession = dict(sorted(self.average_salary_profession.items()))
+        self.number_of_vacancies_profession = dict(sorted(self.number_of_vacancies_profession.items()))
 
-    def get_statistic_by_year(self, year, return_dict):
+    def get_statistic_by_year(self, year):
         """Возвращает статистку за год в порядке:
             Среднее значение зарплаты за год,
             Количество вакансий за год.
@@ -93,8 +91,8 @@ class StatisticalDataProcessor:
             average_salary_profession = 0 if df_vacancy.empty else math.floor(df_vacancy["salary"].mean())
             number_of_vacancies_profession = 0 if df_vacancy.empty else len(df_vacancy.index)
 
-            return_dict[year] = [average_salary, number_of_vacancies, average_salary_profession,
-                                 number_of_vacancies_profession]
+            return [year, average_salary, number_of_vacancies, average_salary_profession,
+                    number_of_vacancies_profession]
 
     def initialize_city_statistics(self):
         """Заполняет словари salary_level и vacancy_rate значениями"""
@@ -105,7 +103,7 @@ class StatisticalDataProcessor:
         df['salary'] = df[['salary_from', 'salary_to']].mean(axis=1)
         df['count'] = df.groupby('area_name')['area_name'].transform('count')
         df = df[df['count'] / df_length >= 0.01]
-        df_cities = df.groupby('area_name', as_index=False)['salary'].mean().sort_values(by='salary',ascending=False)
+        df_cities = df.groupby('area_name', as_index=False)['salary'].mean().sort_values(by='salary', ascending=False)
         df_cities['salary'] = df_cities['salary'].apply(lambda x: int(x))
         df_cities = df_cities.head(10)
         self.salary_level = dict(zip(df_cities['area_name'], df_cities['salary']))
@@ -114,7 +112,6 @@ class StatisticalDataProcessor:
         df_share = df.groupby('area_name', as_index=False)['share'].mean().sort_values(by='share', ascending=False)
         df_share = df_share.head(10)
         self.vacancy_rate = dict(zip(df_share['area_name'], round(df_share['share'], 4)))
-
 
     def get_final_year_statistics(self):
         """Конвертирует статистку по зарплате и количеству вакансий в словари
