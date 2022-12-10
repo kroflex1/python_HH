@@ -51,4 +51,13 @@ for i in range(1000000):
 [part_2007.csv](https://github.com/kroflex1/python_HH/files/10193285/part_2007.csv)
 [part_2008.csv](https://github.com/kroflex1/python_HH/files/10193288/part_2008.csv)
 
+# Задание 3.2.3
+
+Скорость работы функции до multiprocessing
+![1](https://user-images.githubusercontent.com/48649189/206855618-a77eb59b-1e9d-4d8c-834e-8e680d314787.png)
+Скорость работы функции после multiprocessing
+![2](https://user-images.githubusercontent.com/48649189/206855635-21174e4c-3ea5-476c-a9ea-003eda1004b5.png)
+
+
+
 
