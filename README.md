@@ -43,3 +43,12 @@ for i in range(1000000):
 
 **Самой же медленной является функция get_year_1**
 ![2](https://user-images.githubusercontent.com/48649189/206188239-2aede464-983a-4c7b-93d6-8cd0cdcebd21.png)
+
+# Задание 3.2.1
+
+![image](https://user-images.githubusercontent.com/48649189/206664238-6330db43-cc0b-4209-9571-cc9be67e16d4.png)
+## Несколько файлов csv, разделенныз по годам
+[part_2007.csv](https://github.com/kroflex1/python_HH/files/10193285/part_2007.csv)
+[part_2008.csv](https://github.com/kroflex1/python_HH/files/10193288/part_2008.csv)
+
+
