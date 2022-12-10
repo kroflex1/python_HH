@@ -53,10 +53,17 @@ for i in range(1000000):
 
 # Задание 3.2.3
 
-Скорость работы функции до multiprocessing
+Скорость работы StatisticalDataProcessor до 
 ![1](https://user-images.githubusercontent.com/48649189/206855618-a77eb59b-1e9d-4d8c-834e-8e680d314787.png)
-Скорость работы функции после multiprocessing
+Скорость работы StatisticalDataProcessor после
 ![2](https://user-images.githubusercontent.com/48649189/206855635-21174e4c-3ea5-476c-a9ea-003eda1004b5.png)
+
+# Задание 3.2.3
+
+Скорость работы StatisticalDataProcessor до 
+![2](https://user-images.githubusercontent.com/48649189/206855635-21174e4c-3ea5-476c-a9ea-003eda1004b5.png)
+Скорость работы StatisticalDataProcessor после
+![3](https://user-images.githubusercontent.com/48649189/206870409-158406ea-e12f-4b3e-a110-42f7dcb6267a.png)
 
 
 
