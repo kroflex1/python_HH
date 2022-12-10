@@ -1,9 +1,9 @@
-import csv
-import re
-import sys
 import math
-import prettytable
-from prettytable import PrettyTable
+import pandas as pd
+import multiprocessing
+import os.path
+
+from Separator import Separator
 
 class StatisticalDataProcessor:
     """Класс для представления статистики по вакансиям.
@@ -19,32 +19,102 @@ class StatisticalDataProcessor:
         vacancy_rate(list<str>):  Доля вакансий по городам (в порядке убывания)
         """
 
-    def __init__(self, dataset):
-        """Инициализирует объект StatisticalDataProcessor
+    def __init__(self):
+        """Инициализирует объект StatisticalDataProcessor"""
+        self.file_name = input("Введите название файла: ")
+        self.name_of_profession = input("Введите название профессии:  ")
 
-        Args:
-            dataset(list<Vacancy>): Список вакансий
-        """
-        self.dataset = dataset
-        self.name_of_profession = dataset.name_of_profession
+        separator = Separator(self.file_name)
+        self.years = separator.unique_years
+        self.folder_name = separator.folder_name
+        self.main_df = separator.main_df
 
-        self.average_salary = self.get_salary_statistics()
-        self.average_salary_profession = self.get_salary_statistics(self.name_of_profession)
-        self.number_of_vacancies = self.get_number_of_vacancies_statistics()
-        self.number_of_vacancies_profession = self.get_number_of_vacancies_statistics(self.name_of_profession)
-        self.salary_level = self.get_salary_level_city_statistics()
-        self.vacancy_rate = self.get_number_of_vacancies_city_statistics()
+        self.average_salary = {}
+        self.number_of_vacancies = {}
+        self.average_salary_profession = {}
+        self.number_of_vacancies_profession = {}
+        self.initialize_year_statistics()
+
+        self.salary_level = {}
+        self.vacancy_rate = {}
+        self.initialize_city_statistics()
 
     def print_statistic(self):
-        """Выводит свю имеющиеся статистику"""
-        print('Динамика уровня зарплат по годам: {' + ', '.join(self.average_salary) + '}')
-        print('Динамика количества вакансий по годам: {' + ', '.join(self.number_of_vacancies) + '}')
-        print('Динамика уровня зарплат по годам для выбранной профессии: {' + ', '.join(
-            self.average_salary_profession) + '}')
-        print('Динамика количества вакансий по годам для выбранной профессии: {' + ', '.join(
-            self.number_of_vacancies_profession) + '}')
-        print('Уровень зарплат по городам (в порядке убывания): {' + ', '.join(self.salary_level) + '}')
-        print('Доля вакансий по городам (в порядке убывания): {' + ', '.join(self.vacancy_rate) + '}')
+        """Выводит вcю имеющиеся статистику"""
+        print(f'Динамика уровня зарплат по годам: {self.average_salary}')
+        print(f'Динамика количества вакансий по годам: {self.number_of_vacancies}')
+        print(f'Динамика уровня зарплат по годам для выбранной профессии: {self.average_salary_profession}')
+        print(f'Динамика количества вакансий по годам для выбранной профессии: {self.number_of_vacancies_profession}')
+        print(f'Уровень зарплат по городам (в порядке убывания): {self.salary_level}')
+        print(f'Доля вакансий по городам (в порядке убывания): {self.vacancy_rate}')
+
+    def initialize_year_statistics(self):
+        """Добавляет в словари статистик значения из файла
+        """
+        processes = []
+        manager = multiprocessing.Manager()
+        return_dict = manager.dict()
+        for year in self.years:
+            process = multiprocessing.Process(target=self.get_statistic_by_year, args=(year, return_dict))
+            processes.append(process)
+            process.start()
+
+        for process in processes:
+            process.join()
+
+        for year, value in return_dict.items():
+            self.average_salary[year] = value[0]
+            self.number_of_vacancies[year] = value[1]
+            self.average_salary_profession[year] = value[2]
+            self.number_of_vacancies_profession[year] = value[3]
+
+        self.average_salary = dict(sorted(self.average_salary.items()))
+        self.number_of_vacancies = dict(sorted(self.number_of_vacancies.items()))
+        self.average_salary_profession = dict(
+            sorted(self.average_salary_profession.items()))
+        self.number_of_vacancies_profession = dict(
+            sorted(self.number_of_vacancies_profession.items()))
+
+    def get_statistic_by_year(self, year, return_dict):
+        """Возвращает статистку за год в порядке:
+            Среднее значение зарплаты за год,
+            Количество вакансий за год.
+            Среднее значение зарплаты за год для выбранной профессии.
+            Количество вакансий за год для выбранной профессии
+        """
+        file_path = rf"{self.folder_name}\part_{year}.csv"
+        if os.path.exists(file_path):
+            df = pd.read_csv(file_path)
+            df["salary"] = df[["salary_from", "salary_to"]].mean(axis=1)
+            df_vacancy = df[df["name"].str.contains(self.name_of_profession)]
+
+            average_salary = math.floor(df["salary"].mean())
+            number_of_vacancies = len(df.index)
+            average_salary_profession = 0 if df_vacancy.empty else math.floor(df_vacancy["salary"].mean())
+            number_of_vacancies_profession = 0 if df_vacancy.empty else len(df_vacancy.index)
+
+            return_dict[year] = [average_salary, number_of_vacancies, average_salary_profession,
+                                 number_of_vacancies_profession]
+
+    def initialize_city_statistics(self):
+        """Заполняет словари salary_level и vacancy_rate значениями"""
+        pd.set_option('expand_frame_repr', False)
+        df = self.main_df.copy(deep=True)
+        df_length = len(df.index)
+
+        df['salary'] = df[['salary_from', 'salary_to']].mean(axis=1)
+        df['count'] = df.groupby('area_name')['area_name'].transform('count')
+        df = df[df['count'] / df_length >= 0.01]
+        df_cities = df.groupby('area_name', as_index=False)['salary'].mean().sort_values(by='salary',ascending=False)
+        df_cities['salary'] = df_cities['salary'].apply(lambda x: int(x))
+        df_cities = df_cities.head(10)
+        self.salary_level = dict(zip(df_cities['area_name'], df_cities['salary']))
+
+        df['share'] = df['count'] / df_length
+        df_share = df.groupby('area_name', as_index=False)['share'].mean().sort_values(by='share', ascending=False)
+        df_share = df_share.head(10)
+        self.vacancy_rate = dict(zip(df_share['area_name'], round(df_share['share'], 4)))
+
 
     def get_final_year_statistics(self):
         """Конвертирует статистку по зарплате и количеству вакансий в словари
@@ -63,99 +133,6 @@ class StatisticalDataProcessor:
         """
         return [self.convert_city_statistic_to_dictionary(self.salary_level),
                 self.convert_city_statistic_to_dictionary(self.vacancy_rate)]
-
-    def get_salary_statistics(self, name_of_profession=""):
-        """ Возвращает динамику уровня зарплат по годам, если не передан аргумент name_of_profession.
-            Возвращает динамику уровня зарплат по годам для профессии, если передан аргумент name_of_profession.
-         Args:
-             name_of_profession(str): Название вакансии, по которйо нужно получить статистику
-         Returns:
-            list<str>: Статистика по уровню зарплат по годам
-        """
-        salary_statistics = []
-        current_year = self.dataset.vacancies_objects[0].published_at.year
-        average_salary = 0
-        number_of_vacancies = 0
-        for vacancy in self.dataset.vacancies_objects:
-            if vacancy.published_at.year != current_year and (
-                    name_of_profession == "" or name_of_profession in vacancy.name):
-                if number_of_vacancies == 0:
-                    salary_statistics.append(f'{current_year}: {0}')
-                else:
-                    salary_statistics.append(f'{current_year}: {math.floor(average_salary / number_of_vacancies)}')
-                current_year = vacancy.published_at.year
-                average_salary = vacancy.salary.average
-                number_of_vacancies = 1
-            elif name_of_profession == "" or name_of_profession in vacancy.name:
-                average_salary += vacancy.salary.average
-                number_of_vacancies += 1
-        if number_of_vacancies == 0:
-            salary_statistics.append(f'{current_year}: {0}')
-        else:
-            salary_statistics.append(f'{current_year}: {math.floor(average_salary / number_of_vacancies)}')
-        return salary_statistics
-
-    def get_number_of_vacancies_statistics(self, name_of_profession=""):
-        """ Возвращает динамику количества вакансий по годам, если не передан аргумент name_of_profession.
-            Возвращает динамику уровня зарплат по годам для профессии, если передан аргумент name_of_profession.
-        Args:
-            name_of_profession(str): Название вакансии, по которйо нужно получить статистику
-        Returns:
-            list<str>: Статистика по количеству вакансий
-        """
-        number_of_vacancies_statistics = []
-        current_year = self.dataset.vacancies_objects[0].published_at.year
-        number_of_vacancies = 0
-        for vacancy in self.dataset.vacancies_objects:
-            if vacancy.published_at.year != current_year and (
-                    name_of_profession == "" or name_of_profession in vacancy.name):
-                number_of_vacancies_statistics.append(f'{current_year}: {number_of_vacancies}')
-                current_year = vacancy.published_at.year
-                number_of_vacancies = 1
-            elif name_of_profession == "" or name_of_profession in vacancy.name:
-                number_of_vacancies += 1
-        number_of_vacancies_statistics.append(f'{current_year}: {number_of_vacancies}')
-        return number_of_vacancies_statistics
-
-    def get_salary_level_city_statistics(self):
-        """ Возвращает уровень зарплат по городам (в порядке убывания)
-        Returns:
-            list<str>: Статистика по уровню зарплат по городам
-        """
-        number_of_vacancies = len(self.dataset.vacancies_objects)
-        salary_at_cities = {}
-        for vacancy in self.dataset.vacancies_objects:
-            if vacancy.area_name not in salary_at_cities:
-                salary_at_cities[vacancy.area_name] = (1, vacancy.salary.average)
-            else:
-                salary_at_cities[vacancy.area_name] = (salary_at_cities[vacancy.area_name][0] + 1,
-                                                       salary_at_cities[vacancy.area_name][1] + vacancy.salary.average)
-        salary_at_cities = dict(
-            sorted(salary_at_cities.items(), key=lambda item: item[1][1] / item[1][0], reverse=True))
-        average_salary_at_cities = []
-        for city_name, value in salary_at_cities.items():
-            if value[0] >= math.floor(number_of_vacancies / 100):
-                average_salary_at_cities.append(f"'{city_name}': {math.floor(value[1] / value[0])}")
-        return average_salary_at_cities[:10]
-
-    def get_number_of_vacancies_city_statistics(self):
-        """ Возвращает долю вакансий по городам (в порядке убывания)
-        Returns:
-             list<str>: Доля вакансий по городам (в порядке убывания)
-        """
-        number_of_all_vacancies = len(self.dataset.vacancies_objects)
-        number_of_vacancies_at_cities = {}
-        for vacancy in self.dataset.vacancies_objects:
-            if vacancy.area_name not in number_of_vacancies_at_cities:
-                number_of_vacancies_at_cities[vacancy.area_name] = 1
-            else:
-                number_of_vacancies_at_cities[vacancy.area_name] += 1
-        salary_at_cities = dict(sorted(number_of_vacancies_at_cities.items(), key=lambda item: item[1], reverse=True))
-        result = []
-        for city_name, number_of_vacancies in salary_at_cities.items():
-            if number_of_vacancies >= math.floor(number_of_all_vacancies / 100):
-                result.append(f"'{city_name}': {round(number_of_vacancies / number_of_all_vacancies, 4)}")
-        return result[:10]
 
     @staticmethod
     def convert_year_statistic_to_dictionary(statistic):
@@ -176,3 +153,12 @@ class StatisticalDataProcessor:
             dict<string, float>
         """
         return {i.split(': ')[0][1:-1]: float(i.split(': ')[1]) for i in statistic}
+
+    def convert_dictionary_to_list(self, dic):
+        """Преобразует словарь в список
+        Args:
+            dict<int, string>: словарь
+        Returns:
+            list<str>: список
+        """
+        return ', '.join([f'{key}: {value}' for key, value in dic.items()])
