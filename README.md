@@ -1,13 +1,20 @@
-# Задание 2.3.2
+# Содержание
+* [2.3.2](#2_3_2)
+* [2.3.3](#2_3_3)
+* [3.2.1](#3_2_1)
+* [3.2.2](#3_2_2)
+* [3.2.3](#3_2_3)
+
+## Задание 2.3.2 <a name="2_3_2"></a> 
 ![image](https://user-images.githubusercontent.com/48649189/204853405-afa7ffda-0594-4c64-bc06-f8cc7d16a888.png)
 ![image](https://user-images.githubusercontent.com/48649189/204853507-0361ac16-2b98-4238-be16-566684c97458.png)
 ![image](https://user-images.githubusercontent.com/48649189/204853643-77215a17-8c00-4620-a96c-7b7a3807d399.png)
 
-# Задание 2.3.3
+## Задание 2.3.3 <a name="2_3_3"></a> 
 Замеры вывода времени работы по выводу таблицы таблицы
 ![1](https://user-images.githubusercontent.com/48649189/206187260-b311e32d-a207-4ae8-a7cb-a1a2ca697f62.png)
 
-## Варианты преобразования даты
+### Варианты преобразования даты
 ```Python
 from datetime import datetime
 
@@ -32,7 +39,7 @@ for i in range(1000000):
 for i in range(1000000):
     get_year_3(date_string)
 ```
-## Измерим скорость выполнения функций
+### Измерим скорость выполнения функций
 ![image](https://user-images.githubusercontent.com/48649189/206188128-c88ffa03-127a-4a1d-924b-fd17a13dcecc.png)
 
 **Самая быстрая функция это get_year_3**
@@ -44,21 +51,21 @@ for i in range(1000000):
 **Самой же медленной является функция get_year_1**
 ![2](https://user-images.githubusercontent.com/48649189/206188239-2aede464-983a-4c7b-93d6-8cd0cdcebd21.png)
 
-# Задание 3.2.1
+## Задание 3.2.1 <a name="3_2_1"></a> 
 
 ![image](https://user-images.githubusercontent.com/48649189/206664238-6330db43-cc0b-4209-9571-cc9be67e16d4.png)
 ## Несколько файлов csv, разделенныз по годам
 [part_2007.csv](https://github.com/kroflex1/python_HH/files/10193285/part_2007.csv)
 [part_2008.csv](https://github.com/kroflex1/python_HH/files/10193288/part_2008.csv)
 
-# Задание 3.2.3
+## Задание 3.2.2 <a name="3_2_2"></a> 
 
 Скорость работы StatisticalDataProcessor до 
 ![1](https://user-images.githubusercontent.com/48649189/206855618-a77eb59b-1e9d-4d8c-834e-8e680d314787.png)
 Скорость работы StatisticalDataProcessor после
 ![2](https://user-images.githubusercontent.com/48649189/206855635-21174e4c-3ea5-476c-a9ea-003eda1004b5.png)
 
-# Задание 3.2.3
+## Задание 3.2.3 <a name="3_2_3"></a> 
 
 Скорость работы StatisticalDataProcessor до 
 ![2](https://user-images.githubusercontent.com/48649189/206855635-21174e4c-3ea5-476c-a9ea-003eda1004b5.png)
