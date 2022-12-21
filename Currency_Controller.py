@@ -1,19 +1,26 @@
 import requests
 import pandas as pd
 from datetime import datetime
-from dateutil.rrule import *
+from dateutil import rrule
 from urllib.request import urlopen
 import xml.etree.ElementTree as ET
 
 
 class Currency_Controller:
+    """Класс для создания csv файла с курсом фалют, основаным на полученном csv файле.
+
+            Attributes:
+                file_path(str): путь до csv файла
+                df(dataframe): вакансии
+                currencies(list<str>): список валют, втречающихся в файле вакансий более 5000 раз
+        """
     def __init__(self):
+        """Инициализирует класс Currency_Controller"""
         self.file_path = "vacancies_dif_currencies.csv"
         self.df = pd.read_csv(self.file_path)
         self.currencies = []
-        self.get_currency_dateframe()
 
-    def initialize_currencies(self):
+    def __initialize_currencies(self):
         """Заполняет список currencies валютами, которые встречаются более 5000 раз"""
         value = self.df['salary_currency'].value_counts()
         print(value)
@@ -22,23 +29,42 @@ class Currency_Controller:
                 self.currencies.append(currency)
 
 
-    def filter_file(self):
+    def __filter_vacancies_by_currency(self):
         """Фильтрует csv файл, оставляя лишь вакансии валюты которых встречаются более 5000 раз"""
-        self.initialize_currencies()
+        self.__initialize_currencies()
         self.df = self.df[self.df['salary_currency'].isin(self.currencies)]
 
-    def get_currency_dateframe(self):
+    def filter_vacancies_by_currency(self, vacancies):
+        """Фильтрует dataframe, оставляя лишь те вакансии валюты которых встречаются более 5000 раз
+            Args:
+                vacancies(dataframe): вакансии
+            Returns:
+                dataframe: отфильтрованные по валютам вакансии
+        """
+        value = vacancies['salary_currency'].value_counts()
+        currencies = []
+        for currency, count in value.items():
+            if count >= 5000:
+                currencies.append(currency)
+
+        vacancies = vacancies[(vacancies['salary_currency'].isin(currencies)) | (pd.isna(vacancies['salary_currency']))]
+        return vacancies
+
+
+    def create_currency_dateframe(self):
         """Получает csv файл с инфомарцией о валютах по месяцам"""
-        self.filter_file()
-        minDate = datetime.strptime(self.df['published_at'].min(), '%Y-%m-%dT%H:%M:%S%z')
-        maxDate = datetime.strptime(self.df['published_at'].max(), '%Y-%m-%dT%H:%M:%S%z')
+        self.__filter_vacancies_by_currency()
+        minDate = datetime.strptime(self.df['published_at'].min(), '%Y-%m-%dT%H:%M:%S%z').replace(day=12, hour=12, minute=0,
+                                                                                            second=0)
+        maxDate = datetime.strptime(self.df['published_at'].max(), '%Y-%m-%dT%H:%M:%S%z').replace(day=12, hour=12, minute=0,
+                                                                                            second=0)
         result = {'date': []}
         for currency in self.currencies:
             result[currency] = []
 
-        for current_date in rrule(MONTHLY, dtstart=minDate, until=maxDate):
+        for current_date in rrule.rrule(rrule.MONTHLY, dtstart=minDate, until=maxDate):
             tree = ET.parse(
-                urlopen(f'http://www.cbr.ru/scripts/XML_daily.asp?date_req=01/{current_date.strftime("%m/%Y")}d=1'))
+                urlopen(f'http://www.cbr.ru/scripts/XML_daily.asp?date_req=12/{current_date.strftime("%m/%Y")}d=1'))
             root = tree.getroot()
             for child in root.findall('Valute'):
                 currency = child.find('CharCode').text
@@ -52,7 +78,4 @@ class Currency_Controller:
                 if len(result[currency]) !=len(result['date']):
                     result[currency].append(0)
         new_df = pd.DataFrame(result)
-        new_df.to_csv(rf"test.csv", index=False)
-
-
-x = Currency_Controller()
+        new_df.to_csv(rf"currency.csv", index=False)
