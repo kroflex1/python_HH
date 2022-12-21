@@ -75,13 +75,16 @@ for i in range(1000000):
 
 ## Задание 3.3.1 <a name="3_3_1"></a> 
 **Частность валют**
+
 ![image](https://user-images.githubusercontent.com/48649189/208850302-54c1ccbb-b4c7-4cf7-b3e5-08e75c864fc1.png)
 
 **сsv файл с курсом валют по месяцам**
+
 ![image](https://user-images.githubusercontent.com/48649189/208850418-223ea4a3-c171-44b3-958f-f3d3de2c0c5c.png)
-[currency.csv](https://github.com/kroflex1/python_HH/files/10275646/currency.csv)
+Файл: [currency.csv](https://github.com/kroflex1/python_HH/files/10275646/currency.csv)
 
 **Разделеенные cvs файлы**
+
 ![image](https://user-images.githubusercontent.com/48649189/208851053-bf463667-347a-4ae0-a0ff-8231a452f7ec.png)
 
 
