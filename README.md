@@ -6,6 +6,8 @@
 * [3.2.3](#3_2_3)
 * [3.3.1](#3_3_1)
 * [3.3.2](#3_3_2)
+* [3.3.3](#3_3_3)
+
 
 ## Задание 2.3.2 <a name="2_3_2"></a> 
 ![image](https://user-images.githubusercontent.com/48649189/204853405-afa7ffda-0594-4c64-bc06-f8cc7d16a888.png)
@@ -91,6 +93,11 @@ for i in range(1000000):
 ## Задание 3.3.2 <a name="3_3_2"></a> 
 ![image](https://user-images.githubusercontent.com/48649189/208931998-aad8a88d-5423-4247-8ff7-80b3e48ff08e.png)
 **Файл:** [salary_info_100.csv](https://github.com/kroflex1/python_HH/files/10278622/salary_info_100.csv)
+
+## Задание 3.3.3 <a name="3_3_3"></a> 
+![image](https://user-images.githubusercontent.com/48649189/208973027-3706e640-474d-4aef-87f5-7e33d48179e2.png)
+**Файл:**[vacancies_from_HH.csv](https://github.com/kroflex1/python_HH/files/10280097/vacancies_from_HH.csv)
+
 
 
 
