@@ -53,7 +53,6 @@ class StatisticalDataProcessor:
     def initialize_year_statistics(self):
         """Добавляет в словари статистик значения из файла
         """
-        processes = []
         with concurrent.futures.ProcessPoolExecutor(max_workers=3) as executor:
             wait_complete = []
             for task in self.years:
@@ -75,6 +74,7 @@ class StatisticalDataProcessor:
 
     def get_statistic_by_year(self, year):
         """Возвращает статистку за год в порядке:
+            Год,
             Среднее значение зарплаты за год,
             Количество вакансий за год.
             Среднее значение зарплаты за год для выбранной профессии.
