@@ -88,9 +88,9 @@ for i in range(1000000):
 
 ![image](https://user-images.githubusercontent.com/48649189/208851053-bf463667-347a-4ae0-a0ff-8231a452f7ec.png)
 
-## Задание 3.3.2 <a name="3_3_1"></a> 
+## Задание 3.3.2 <a name="3_3_2"></a> 
 ![image](https://user-images.githubusercontent.com/48649189/208931998-aad8a88d-5423-4247-8ff7-80b3e48ff08e.png)
-Файл: [salary_info_100.csv](https://github.com/kroflex1/python_HH/files/10278622/salary_info_100.csv)
+**Файл:** [salary_info_100.csv](https://github.com/kroflex1/python_HH/files/10278622/salary_info_100.csv)
 
 
 
