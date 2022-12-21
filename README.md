@@ -5,6 +5,7 @@
 * [3.2.2](#3_2_2)
 * [3.2.3](#3_2_3)
 * [3.3.1](#3_3_1)
+* [3.3.2](#3_3_2)
 
 ## Задание 2.3.2 <a name="2_3_2"></a> 
 ![image](https://user-images.githubusercontent.com/48649189/204853405-afa7ffda-0594-4c64-bc06-f8cc7d16a888.png)
@@ -86,6 +87,11 @@ for i in range(1000000):
 **Разделеенные cvs файлы**
 
 ![image](https://user-images.githubusercontent.com/48649189/208851053-bf463667-347a-4ae0-a0ff-8231a452f7ec.png)
+
+## Задание 3.3.2 <a name="3_3_1"></a> 
+![image](https://user-images.githubusercontent.com/48649189/208917514-b1c03b54-9036-4c10-abd1-afe6232360d3.png)
+Файл: [salary_info_100.csv](https://github.com/kroflex1/python_HH/files/10278048/salary_info_100.csv)
+
 
 
 
