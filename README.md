@@ -80,8 +80,8 @@ for i in range(1000000):
 
 **сsv файл с курсом валют по месяцам**
 
-![image](https://user-images.githubusercontent.com/48649189/208850418-223ea4a3-c171-44b3-958f-f3d3de2c0c5c.png)
-Файл: [currency.csv](https://github.com/kroflex1/python_HH/files/10275646/currency.csv)
+![image](https://user-images.githubusercontent.com/48649189/208899540-f61ac737-d4ef-438b-a93a-56977ea36441.png)
+Файл: [currency.csv](https://github.com/kroflex1/python_HH/files/10277394/currency.csv)
 
 **Разделеенные cvs файлы**
 
