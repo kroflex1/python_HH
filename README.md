@@ -4,6 +4,7 @@
 * [3.2.1](#3_2_1)
 * [3.2.2](#3_2_2)
 * [3.2.3](#3_2_3)
+* [3.3.1](#3_3_1)
 
 ## Задание 2.3.2 <a name="2_3_2"></a> 
 ![image](https://user-images.githubusercontent.com/48649189/204853405-afa7ffda-0594-4c64-bc06-f8cc7d16a888.png)
@@ -71,6 +72,19 @@ for i in range(1000000):
 ![2](https://user-images.githubusercontent.com/48649189/206855635-21174e4c-3ea5-476c-a9ea-003eda1004b5.png)
 Скорость работы StatisticalDataProcessor после
 ![3](https://user-images.githubusercontent.com/48649189/206870409-158406ea-e12f-4b3e-a110-42f7dcb6267a.png)
+
+## Задание 3.3.1 <a name="3_3_1"></a> 
+** Частность валют
+![image](https://user-images.githubusercontent.com/48649189/208850302-54c1ccbb-b4c7-4cf7-b3e5-08e75c864fc1.png)
+
+** csv файл с курсом валют по месяцам
+![image](https://user-images.githubusercontent.com/48649189/208850418-223ea4a3-c171-44b3-958f-f3d3de2c0c5c.png)
+[currency.csv](https://github.com/kroflex1/python_HH/files/10275646/currency.csv)
+
+** Разделеенные cvs файлы
+![image](https://user-images.githubusercontent.com/48649189/208851053-bf463667-347a-4ae0-a0ff-8231a452f7ec.png)
+
+
 
 
 
