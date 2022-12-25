@@ -7,9 +7,9 @@ import matplotlib.pyplot as plt
 from jinja2 import Environment, FileSystemLoader
 import pdfkit
 
+
 class Report:
     """Класс для визуального представления информации о вакансиях.
-
         Attributes:
             wb(Workbook)
     """
@@ -19,13 +19,18 @@ class Report:
         self.wb = Workbook()
 
     def generate_pdf(self, year_statistics, city_statistics, name_of_profession):
+        """Создаёт pdf файл со статистикой
+            Args:
+                year_statistics(list<dict<str,int>>): зарплаты по годам, количества вакансий по годам, зарплат по годам для выбранной профессии, количество вакансий по годам для выбранной профессии
+                city_statistics(list<dict<str,float>>): уровень зарплат по городам, доля вакансий по городам
+                name_of_profession(str): название выбранной профессии"""
         self.generate_image(year_statistics, city_statistics, name_of_profession)
         heads1 = ['Год', 'Средняя зарплата', f'Средняя зарплата - {name_of_profession}', 'Количество вакансий',
                   f'Количество вакансий - {name_of_profession}']
         heads2 = ['Город', 'Уровень зарплат', 'Город', 'Доля вакансий']
         city_statistics[1].pop('Другие')
         for key, value in city_statistics[1].items():
-            city_statistics[1][key] = ('%.2f' % (value * 100) + '%').replace('.',',')
+            city_statistics[1][key] = ('%.2f' % (value * 100) + '%').replace('.', ',')
 
         env = Environment(loader=FileSystemLoader(''))
         template = env.get_template("pattern.html")
@@ -42,6 +47,7 @@ class Report:
 
         config = pdfkit.configuration(wkhtmltopdf=r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe')
         pdfkit.from_string(pdf_template, 'out.pdf', configuration=config, options={"enable-local-file-access": None})
+
 
     def generate_image(self, year_statistics, city_statistics, name_of_profession):
         """Создаёт изображение с диаграммами по вакансиям
@@ -232,6 +238,98 @@ class Report:
         """
         for statisctic in statistics:
             dict(filter(lambda item: int(item[1]) >= start_year and int(item[1]) <= end_year, statisctic.items()))
+
+    def generate_pdf_region(self, year_and_region_statistics, city_statistics, name_of_profession, region):
+        """Создаёт pdf файл со статистикой
+            Args:
+                year_and_region_statistics(list<dict<str,int>>): зарплаты по годам в определенном регионе, количества вакансий по годам в определенном регионе
+                city_statistics(list<dict<str,float>>): уровень зарплат по городам, доля вакансий по городам
+                name_of_profession(str): название выбранной профессии
+                region(str): название региона
+        """
+        self.generate_image_by_region(year_and_region_statistics, city_statistics, name_of_profession, region)
+        heads1 = ['Год', f'Средняя зарплата - {name_of_profession}\nв {region}', f'Количество вакансий - {name_of_profession}\nв {region}']
+        heads2 = ['Город', 'Уровень зарплат', 'Город', 'Доля вакансий']
+        city_statistics[1].pop('Другие')
+        for key, value in city_statistics[1].items():
+            city_statistics[1][key] = ('%.2f' % (value * 100) + '%').replace('.', ',')
+
+        env = Environment(loader=FileSystemLoader(''))
+        template = env.get_template("pattern_region.html")
+        pdf_template = template.render({'name_of_profession': name_of_profession,
+                                        'region': region,
+                                        'heads1': heads1,
+                                        'heads2': heads2,
+                                        'vac_salary_by_years': year_and_region_statistics[0],
+                                        'vac_count_by_years': year_and_region_statistics[1],
+                                        'city_salary': city_statistics[0],
+                                        'vacancy_rate': city_statistics[1]
+                                        })
+
+        config = pdfkit.configuration(wkhtmltopdf=r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe')
+        pdfkit.from_string(pdf_template, 'out.pdf', configuration=config, options={"enable-local-file-access": None})
+
+    def generate_image_by_region(self, year_and_region_statistics, city_statistics, name_of_profession, region):
+        """Создаёт изображение с диаграммами по вакансиям
+        Args:
+            year_and_region_statistics(list<dict<int, int>>): Статистики по зарплатам и доли вакансий
+            city_statistics(list<dict<int, float>>): Статистики по городам
+            name_of_profession(str): Название профессии
+            region(str): Название региона
+        """
+        fig = plt.figure()
+        self.filter_statistics(year_and_region_statistics, 2003, 2022)
+        self.draw_year_salary_graph_region(fig, year_and_region_statistics[0], name_of_profession, region)
+        self.draw_year_vacancy_graph_region(fig, year_and_region_statistics[1], name_of_profession, region)
+        self.draw_city_salary_graph(fig, city_statistics[0])
+        self.draw_vacancy_rate(fig, city_statistics[1])
+
+        plt.tight_layout()
+        plt.savefig("graph.png", dpi=200)
+
+    def draw_year_salary_graph_region(self, fig, salary_by_year_profession, name_of_profession, region):
+        """Создаёт диаграмму по уровню зарплат по годам
+        Args:
+            fig(figure): Фигура, на которой рисуется диаграмма
+            salary_by_year_profession(dict<int, int>):  Статистика уровня зарплат профессии по годам в выбранном регионе
+            name_of_profession(str): Название профессии
+            region(str): Название региона
+        """
+        width = 0.4
+        x_nums = np.arange(len(salary_by_year_profession.keys()))
+        x_list2 = x_nums + width / 2
+
+        ax = fig.add_subplot(221)
+        ax.set_title(f"Уровень зарплат по годам\nв {region}")
+        ax.bar(x_list2, salary_by_year_profession.values(), width, label=f'з/п {name_of_profession.lower()}')
+
+
+        ax.tick_params(axis="both", labelsize=8)
+        ax.set_xticks(x_nums, salary_by_year_profession.keys(), rotation="vertical")
+        ax.legend(fontsize=8)
+        ax.grid(True, axis="y")
+
+    def draw_year_vacancy_graph_region(self, fig, vacancy_by_year_profession, name_of_profession, region):
+        """Создаёт диаграмму по количеству вакансий по годам
+        Args:
+            fig(figure): Фигура, на которой рисуется диаграмма
+            vacancy_by_year_profession(dict<int, int>):  Статистика количества вакансий профессии по годам
+            name_of_profession(str): Название профессии
+            region(str): Название региона
+        """
+        width = 0.4
+        x_nums = np.arange(len(vacancy_by_year_profession.keys()))
+        x_list1 = x_nums - width / 2
+        x_list2 = x_nums + width / 2
+
+        ax = fig.add_subplot(222)
+        ax.set_title(f"Количество ваканский по годам\nв {region}")
+        ax.bar(x_list2, vacancy_by_year_profession.values(), width,
+               label=f'Количество вакансий\n{name_of_profession.lower()}')
+
+        ax.set_xticks(x_nums, vacancy_by_year_profession.keys(), rotation="vertical")
+        ax.legend(fontsize=8, borderpad=0)
+        ax.grid(True, axis="y")
 
     @staticmethod
     def format_city(city):

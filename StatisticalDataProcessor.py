@@ -23,10 +23,32 @@ class StatisticalDataProcessor:
 
     def __init__(self):
         """Инициализирует объект StatisticalDataProcessor"""
-        self.file_name = input("Введите название файла: ")
+        self.name_of_profession = None
+        self.years = None
+        self.folder_name = None
+        self.main_df = None
+        self.average_salary = {}
+        self.number_of_vacancies = {}
+        self.average_salary_profession = {}
+        self.number_of_vacancies_profession = {}
+        self.salary_level = {}
+        self.vacancy_rate = {}
+
+        self.region = None
+        self.regions = None
+        self.folder_regions_name = None
+        self.average_salary_region = {}
+        self.vacancy_rate_region = {}
+        self.average_salary_profession_region = {}
+        self.number_of_vacancies_profession_region = {}
+
+    def initialize_statistics(self):
+        """Собирает статистику по зарплаты по годам, количества вакансий по годам, зарплат по годам для выбранной профессии, количество вакансий по годам для выбранной профессии, уровень зарплат по городам, доля вакансий по городам"""
+        file_name = input("Введите название файла: ")
         self.name_of_profession = input("Введите название профессии:  ")
 
-        separator = Separator(self.file_name)
+        separator = Separator()
+        separator.create_files_separated_by_years(file_name)
         self.years = list(separator.unique_years)
         self.folder_name = separator.folder_name
         self.main_df = separator.main_df
@@ -40,6 +62,26 @@ class StatisticalDataProcessor:
         self.salary_level = {}
         self.vacancy_rate = {}
         self.initialize_city_statistics()
+
+    def initialize_statistics_by_region(self):
+        """Собирает статистику по уровеню зарплат по городам, доли вакансий по городам, уровню зарплат по годам для выбранной профессии и региона, количества вакансий по годам для выбранной профессии и региона """
+        file_name = input("Введите название файла: ")
+        self.name_of_profession = input("Введите название профессии: ")
+        self.region = input("Введите название региона: ")
+
+        separator = Separator()
+        separator.create_files_separated_by_years(file_name)
+        self.years = list(separator.unique_years)
+        self.folder_name = separator.folder_name
+        self.main_df = separator.main_df
+
+        self.salary_level = {}
+        self.vacancy_rate = {}
+        self.initialize_city_statistics()
+
+        self.average_salary_profession_region = {}
+        self.number_of_vacancies_profession_region = {}
+        self.initialize_year_and_region_statistics()
 
     def print_statistic(self):
         """Выводит вcю имеющиеся статистику"""
@@ -83,7 +125,6 @@ class StatisticalDataProcessor:
         file_path = rf"{self.folder_name}\part_{year}.csv"
         if os.path.exists(file_path):
             df = pd.read_csv(file_path)
-            df["salary"] = df[["salary_from", "salary_to"]].mean(axis=1)
             df_vacancy = df[df["name"].str.contains(self.name_of_profession)]
 
             average_salary = math.floor(df["salary"].mean())
@@ -100,11 +141,10 @@ class StatisticalDataProcessor:
         df = self.main_df.copy(deep=True)
         df_length = len(df.index)
 
-        df['salary'] = df[['salary_from', 'salary_to']].mean(axis=1)
         df['count'] = df.groupby('area_name')['area_name'].transform('count')
         df = df[df['count'] / df_length >= 0.01]
         df_cities = df.groupby('area_name', as_index=False)['salary'].mean().sort_values(by='salary', ascending=False)
-        df_cities['salary'] = df_cities['salary'].apply(lambda x: int(x))
+        df_cities['salary'] = df_cities['salary'].apply(lambda x: float(x))
         df_cities = df_cities.head(10)
         self.salary_level = dict(zip(df_cities['area_name'], df_cities['salary']))
 
@@ -113,45 +153,66 @@ class StatisticalDataProcessor:
         df_share = df_share.head(10)
         self.vacancy_rate = dict(zip(df_share['area_name'], round(df_share['share'], 4)))
 
+    def initialize_year_and_region_statistics(self):
+        """Добавляет в словари статистик значения из файла
+        """
+        with concurrent.futures.ProcessPoolExecutor(max_workers=3) as executor:
+            wait_complete = []
+            for task in self.years:
+                future = executor.submit(self.get_statistic_by_year_and_region, task)
+                wait_complete.append(future)
+
+        for res in concurrent.futures.as_completed(wait_complete):
+            result = res.result()
+            year = result[0]
+            self.average_salary_profession_region[year] = result[1]
+            self.number_of_vacancies_profession_region[year] = result[2]
+
+        self.average_salary_profession_region = dict(sorted(self.average_salary_profession_region.items()))
+        self.number_of_vacancies_profession_region = dict(sorted(self.number_of_vacancies_profession_region.items()))
+
+    def get_statistic_by_year_and_region(self, year):
+        """Возвращает статистку за год в порядке:
+            Год,
+            Среднее значение зарплаты за год в заданном регионе,
+            Количество вакансий за год в заданном регионе.
+        """
+        file_path = rf"{self.folder_name}\part_{year}.csv"
+        if os.path.exists(file_path):
+            df = pd.read_csv(file_path)
+            df = df[(df["name"].str.contains(self.name_of_profession)) & (df["area_name"] == self.region)]
+
+            average_salary = math.floor(df["salary"].mean())
+            vacancy_rate = len(df.index)
+            return [year, average_salary, vacancy_rate]
+
     def get_final_year_statistics(self):
-        """Конвертирует статистку по зарплате и количеству вакансий в словари
+        """Возвращает статистку по зарплате и количеству вакансий в словари
         Returns:
             list<dict<int,int>>: Список статистик по зарплате и количеству вакансий
         """
-        return [self.convert_year_statistic_to_dictionary(self.average_salary),
-                self.convert_year_statistic_to_dictionary(self.average_salary_profession),
-                self.convert_year_statistic_to_dictionary(self.number_of_vacancies),
-                self.convert_year_statistic_to_dictionary(self.number_of_vacancies_profession)]
+        return [self.average_salary,
+                self.average_salary_profession,
+                self.number_of_vacancies,
+                self.number_of_vacancies_profession]
 
     def get_final_city_statistics(self):
-        """Конвертирует статистику по городам в словари
+        """Возвращает статистику по городам в словари
         Returns:
             list<dict<int,float>>: Список статистике по городам
         """
-        return [self.convert_city_statistic_to_dictionary(self.salary_level),
-                self.convert_city_statistic_to_dictionary(self.vacancy_rate)]
+        return [self.salary_level,
+                self.vacancy_rate]
 
-    @staticmethod
-    def convert_year_statistic_to_dictionary(statistic):
-        """ Конвертирует статистку, связянную с зарплатой или с долей вакансий, в словарь
-        Args:
-            statistic(list<str>):
-        Returns:
-            dict<int, int>
+    def get_final_region_statistics(self):
+        """Конвертирует статистку по зарплате и количеству вакансий в словари
+            Returns:
+                list<dict<int,int>>: Список статистик по зарплате и количеству вакансий
         """
-        return {int(i.split(': ')[0]): int(i.split(': ')[1]) for i in statistic}
+        return [self.average_salary_profession_region,
+                self.number_of_vacancies_profession_region]
 
-    @staticmethod
-    def convert_city_statistic_to_dictionary(statistic):
-        """ Конвертирует статистку, связянную с городами, в словарь
-        Args:
-            statistic(list<str>):
-        Returns:
-            dict<string, float>
-        """
-        return {i.split(': ')[0][1:-1]: float(i.split(': ')[1]) for i in statistic}
-
-    def convert_dictionary_to_list(self, dic):
+    def __convert_dictionary_to_list(self, dic):
         """Преобразует словарь в список
         Args:
             dict<int, string>: словарь

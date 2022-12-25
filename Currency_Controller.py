@@ -76,6 +76,10 @@ class Currency_Controller:
             #Проверяем, значение валюты на пустоту
             for currency in self.currencies:
                 if len(result[currency]) !=len(result['date']):
-                    result[currency].append(0)
+                    result[currency].append(None)
         new_df = pd.DataFrame(result)
         new_df.to_csv(rf"currency.csv", index=False)
+
+
+
+

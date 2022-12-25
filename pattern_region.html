@@ -72,21 +72,17 @@
 <body>
     <h1 class="main_title">Аналитика по зарплатам и городам для профессии {{ name_of_profession }}</h1>
     <img src="file:///C:/Users/Kroflex/Desktop/python_HH/graph.png" alt="">
-    <h2 style="text-align: center;">Статистика по годам</h2>
+    <h2 style="text-align: center;">Статистика по годам в {{region}}</h2>
     <table class="year-table">
         <tr>
             <th>{{heads1[0]}}</th>
             <th>{{heads1[1]}}</th>
             <th>{{heads1[2]}}</th>
-            <th>{{heads1[3]}}</th>
-            <th>{{heads1[4]}}</th>
         </tr>
-        {% for key, value in salary_by_years.items() %}
+        {% for key, value in vac_salary_by_years.items() %}
         <tr>
             <td>{{key}}</td>
             <td>{{value}}</td>
-            <td>{{vac_salary_by_years[key]}}</td>
-            <td>{{vacs_by_years[key]}}</td>
             <td>{{vac_count_by_years[key]}}</td>
         </tr>
         {% endfor %}

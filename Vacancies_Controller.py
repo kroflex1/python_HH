@@ -13,12 +13,28 @@ class Vacancies_Controller:
         """
 
     def __init__(self):
-        """Инициализирует класс Vacancies_Controller"""
-        self.df = pd.read_csv("vacancies_dif_currencies.csv")
+        """Инициализирует класс Vacancies_Controller
+            Args: file_name(str): файл с вакансиями"""
         self.currency_values = pd.read_csv("currency.csv")
 
-    def create_filtered_file(self):
+    def get_formatted_dataframe(self, vacancies):
+        """Возвращает dataframe с преобразованной зарлатой
+           Args:
+               vacancies(dataframe): вакансии
+           Returns:
+                 dataframe: вакансии со столбцом salary
+        """
+        currency_controller = Currency_Controller()
+        vacancies = currency_controller.filter_vacancies_by_currency(vacancies)
+
+        vacancies['salary'] = vacancies.apply(self.get_salary, axis=1)
+        vacancies = vacancies.drop(columns=['salary_from', 'salary_to', 'salary_currency'])
+
+        return vacancies
+
+    def create_formatted_file(self,vacancy_file_name):
         """Создаёт отфильтрованный по зарплатам csv файл"""
+        self.df = pd.read_csv(vacancy_file_name)
         currency_controller = Currency_Controller()
         self.df = currency_controller.filter_vacancies_by_currency(self.df)
 
@@ -27,21 +43,23 @@ class Vacancies_Controller:
 
         self.df.to_csv(rf"formated.csv", index=False)
 
+
+
     def get_salary(self, row):
         """Возвращает зарплату в зависимости от полей salary_from, salary_to, salary_currency
             Returns:
                 float:зарплата
         """
         if (pd.isna(row['salary_from']) and pd.isna(row['salary_to'])) or pd.isna(row['salary_currency']):
-            return numpy.nan
+            return None
         if row['salary_currency'] == 'RUR':
             currency_value = 1
         else:
             current_date = datetime.strptime(row['published_at'], '%Y-%m-%dT%H:%M:%S%z')
             currency_row = self.currency_values[self.currency_values['date'] == current_date.strftime('%Y-%m')]
             currency_value = currency_row.iloc[0][row['salary_currency']]
-        if currency_value == 0:
-            return numpy.nan
+        if pd.isna(currency_value):
+            return None
         if pd.isna(row['salary_from']):
             x = float(row['salary_to']) * currency_value
             return x
@@ -52,8 +70,3 @@ class Vacancies_Controller:
             x = (float(row['salary_to']) + float(row['salary_from'])) / 2 * currency_value
             return x
 
-
-
-x = pd.read_csv('formated.csv')
-x = x.head(100)
-x.to_csv(rf"salary_info_100.csv", index=False)
