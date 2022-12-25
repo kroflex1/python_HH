@@ -9,6 +9,7 @@
 * [3.3.3](#3_3_3)
 * [3.4.1](#3_4_1)
 * [3.4.2](#3_4_2)
+* [3.4.3](#3_4_3)
 
 
 ## Задание 2.3.2 <a name="2_3_2"></a> 
@@ -108,6 +109,12 @@ for i in range(1000000):
 Исходные данные взяты из файла "vacancies_dif_currencies.csv"
 
 **Файл:** [out.pdf](https://github.com/kroflex1/python_HH/files/10298266/out.pdf)
+
+## Задание 3.4.3 <a name="3_4_3"></a> 
+Исходные данные взяты из файла "vacancies_dif_currencies.csv"
+
+**Файл:** [out.pdf](https://github.com/kroflex1/python_HH/files/10300016/out.pdf)
+
 
 
 
