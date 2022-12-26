@@ -123,6 +123,8 @@ for i in range(1000000):
 
 
 ## Задание 3.5.2 <a name="3_5_2"></a> 
+![ex2](https://user-images.githubusercontent.com/48649189/209556937-91bbd64c-905e-40cc-904b-b5184359c104.png)
+
 
 
 ## Задание 3.5.3 <a name="3_5_3"></a> 
