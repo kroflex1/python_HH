@@ -194,23 +194,29 @@ for i in range(1000000):
 
 ![image](https://user-images.githubusercontent.com/48649189/209555810-28484d05-d44a-4294-b9e1-0871b0437c17.png)
 
-Вывод программы:
+Вывод программы по вакансии Программист:
 **Динамика уровня зарплат по годам**
+
 ![image](https://user-images.githubusercontent.com/48649189/209555850-39c718f5-aecb-4da0-a906-def816d7f42f.png)
 
 **Динамика количества вакансий по годам**
+
 ![image](https://user-images.githubusercontent.com/48649189/209555976-411f77d5-d277-4346-b62a-e34a1c65c877.png)
 
 **Динамика уровня зарплат по годам для выбранной профессии**
+
 ![image](https://user-images.githubusercontent.com/48649189/209555994-040b4ec6-8d51-4122-82e7-78c78e0979c5.png)
 
 **Динамика количества вакансий по годам для выбранной профессии**
+
 ![image](https://user-images.githubusercontent.com/48649189/209556016-738927c5-d3f2-45bb-b44a-50b8b20b3748.png)
 
 **Уровень зарплат по городам**
+
 ![image](https://user-images.githubusercontent.com/48649189/209556031-8dde2388-d92d-4c2b-b5be-09d8e1beb7df.png)
 
 **Доля вакансий по городам**
+
 ![image](https://user-images.githubusercontent.com/48649189/209556050-ea32f0bd-3381-4167-be7f-6d1078b00428.png)
 
 
