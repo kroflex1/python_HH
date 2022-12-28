@@ -10,6 +10,9 @@
 * [3.4.1](#3_4_1)
 * [3.4.2](#3_4_2)
 * [3.4.3](#3_4_3)
+* [3.5.1](#3_5_1)
+* [3.5.2](#3_5_2)
+* [3.5.3](#3_5_3)
 
 
 ## Задание 2.3.2 <a name="2_3_2"></a> 
@@ -114,6 +117,112 @@ for i in range(1000000):
 Исходные данные взяты из файла "vacancies_dif_currencies.csv"
 
 **Файл:** [out.pdf](https://github.com/kroflex1/python_HH/files/10300016/out.pdf)
+
+## Задание 3.5.1 <a name="3_5_1"></a> 
+**Название Файла: currency_dynamic.sqlite** 
+
+
+## Задание 3.5.2 <a name="3_5_2"></a> 
+![ex2](https://user-images.githubusercontent.com/48649189/209556937-91bbd64c-905e-40cc-904b-b5184359c104.png)
+
+
+
+## Задание 3.5.3 <a name="3_5_3"></a> 
+Программа по выводу данных
+```Python
+    def initialize_statistics_from_database(self):
+        file_name = input('Введите название файла: ')
+        self.name_of_profession = input("Введите название профессии:  ")
+        vacancy_controller= Vacancies_Controller()
+        vacancy_controller.create_formatted_file(file_name)
+
+
+
+        self.con = sqlite3.connect('currency_dynamic.sqlite')
+
+        self.print_average_salary_from_database()
+        self.print_number_of_vacancies()
+        self.print_average_salary_profession()
+        self.print_number_of_vacancies_profession()
+
+        self.print_salary_level()
+        self.print_vacancy_rate()
+
+
+    def print_average_salary_from_database(self):
+        data = pd.read_sql_query(
+            "SELECT strftime('%Y', published_at) as year, ROUND(AVG(salary), 4) as average_salary FROM formatted GROUP BY strftime('%Y', published_at)",
+            self.con)
+        print(data)
+        print('\n')
+
+    def print_number_of_vacancies(self):
+        data = pd.read_sql_query(
+            "SELECT  strftime('%Y', published_at) as year, COUNT(name) as count FROM formatted GROUP BY strftime('%Y', published_at)",
+            self.con)
+        print(data)
+        print('\n')
+
+    def print_average_salary_profession(self):
+        data = pd.read_sql_query(
+            f"SELECT  strftime('%Y', published_at) as year, ROUND(AVG(salary),4) as average_salary FROM formatted WHERE name LIKE '%{self.name_of_profession}%' GROUP BY strftime('%Y', published_at)",
+            self.con)
+        print(data)
+        print('\n')
+
+    def print_number_of_vacancies_profession(self):
+        data = pd.read_sql_query(
+            f"SELECT  strftime('%Y', published_at) as year, COUNT(name) as count FROM formatted WHERE name LIKE '%{self.name_of_profession}%' GROUP BY strftime('%Y', published_at)",
+            self.con)
+        print(data)
+        print('\n')
+
+    def print_salary_level(self):
+        amount = self.con.execute('SELECT COUNT(*) FROM formatted').fetchone()[0]
+        data = pd.read_sql_query(
+            f"SELECT area_name, ROUND(AVG(salary),4) as average_salary FROM formatted GROUP BY area_name HAVING COUNT(name) >= {amount} / 100 ORDER BY AVG(salary) DESC LIMIT 10",
+            self.con)
+        print(data)
+        print('\n')
+
+    def print_vacancy_rate(self):
+        amount = self.con.execute('SELECT COUNT(*) FROM formatted').fetchone()[0]
+        data = pd.read_sql_query(
+            f"SELECT  area_name, ROUND(CAST(COUNT(name) AS FLOAT) / {amount},4) as rate  FROM formatted GROUP BY area_name HAVING COUNT(name) >= {amount}/ 100 ORDER BY COUNT(name) / {amount} DESC LIMIT 10",
+            self.con)
+        print(data)
+        print('\n')
+```
+
+![image](https://user-images.githubusercontent.com/48649189/209555810-28484d05-d44a-4294-b9e1-0871b0437c17.png)
+
+Вывод программы по вакансии Программист:
+**Динамика уровня зарплат по годам**
+
+![image](https://user-images.githubusercontent.com/48649189/209555850-39c718f5-aecb-4da0-a906-def816d7f42f.png)
+
+**Динамика количества вакансий по годам**
+
+![image](https://user-images.githubusercontent.com/48649189/209555976-411f77d5-d277-4346-b62a-e34a1c65c877.png)
+
+**Динамика уровня зарплат по годам для выбранной профессии**
+
+![image](https://user-images.githubusercontent.com/48649189/209555994-040b4ec6-8d51-4122-82e7-78c78e0979c5.png)
+
+**Динамика количества вакансий по годам для выбранной профессии**
+
+![image](https://user-images.githubusercontent.com/48649189/209556016-738927c5-d3f2-45bb-b44a-50b8b20b3748.png)
+
+**Уровень зарплат по городам**
+
+![image](https://user-images.githubusercontent.com/48649189/209556031-8dde2388-d92d-4c2b-b5be-09d8e1beb7df.png)
+
+**Доля вакансий по городам**
+
+![image](https://user-images.githubusercontent.com/48649189/209556050-ea32f0bd-3381-4167-be7f-6d1078b00428.png)
+
+
+
 
 
 
