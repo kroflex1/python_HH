@@ -2,20 +2,23 @@ import requests
 import pandas as pd
 from datetime import datetime
 
+
 class HeadHunter_Vacancies:
     def __init__(self):
         self.dates = []
         self.__initialize_dates()
 
     def get_vacancies(self):
+        """Создаёт файл со списком вакансий за определенный день"""
         all_vacancies = []
         for i in range(len(self.dates) - 1):
             all_vacancies.extend(self.__read_vacancies(self.dates[i], self.dates[i + 1]))
 
-        df = pd.DataFrame.from_dict( all_vacancies)
+        df = pd.DataFrame.from_dict(all_vacancies)
         df.to_csv('vacancies_from_HH.csv', index=False)
 
     def __initialize_dates(self):
+        """Инициализирует промежутки времени"""
         date1 = datetime.strptime('2022-12-20T00:00:00+0300', '%Y-%m-%dT%H:%M:%S%z').replace(hour=0, minute=0,
                                                                                              second=0).strftime(
             '%Y-%m-%dT%H:%M:%S')
@@ -40,13 +43,16 @@ class HeadHunter_Vacancies:
         self.dates = [date1, date2, date3, date4, date5, date6, date7]
 
     def __read_vacancies(self, start_date, end_date):
+        """Возвращает список вакансий за определенный промежуток времени"""
         def try_get_json(page, start_date, end_date):
+            """"""
             for i in range(50):
                 response = requests.get(
                     f'https://api.hh.ru/vacancies?specialization=1&per_page=100&page={page}&date_from={start_date}&date_to={end_date}')
                 if response.status_code == 200:
                     return response.json()
             raise requests.exceptions.RetryError('Не удалось получить ответ от сервеа')
+
         json = requests.get(
             f'https://api.hh.ru/vacancies?specialization=1&per_page=100&date_from={start_date}&date_to={end_date}').json()
         pages = json['pages']

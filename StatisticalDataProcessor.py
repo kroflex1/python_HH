@@ -171,12 +171,13 @@ class StatisticalDataProcessor:
         return ', '.join([f'{key}: {value}' for key, value in dic.items()])
 
     def initialize_statistics_from_database(self):
+        """
+        Выводит информацию о статистике в консоль
+        """
         file_name = input('Введите название файла: ')
         self.name_of_profession = input("Введите название профессии:  ")
-        vacancy_controller= Vacancies_Controller()
+        vacancy_controller = Vacancies_Controller()
         vacancy_controller.create_formatted_file(file_name)
-
-
 
         self.con = sqlite3.connect('currency_dynamic.sqlite')
 
@@ -185,11 +186,11 @@ class StatisticalDataProcessor:
         self.print_average_salary_profession()
         self.print_number_of_vacancies_profession()
 
-        self.print_salary_level()
+        self.print_salary_level_by_city()
         self.print_vacancy_rate()
 
-
     def print_average_salary_from_database(self):
+        """Печатает динамику уровня зарплат по годам"""
         data = pd.read_sql_query(
             "SELECT strftime('%Y', published_at) as year, ROUND(AVG(salary), 4) as average_salary FROM formatted GROUP BY strftime('%Y', published_at)",
             self.con)
@@ -197,6 +198,7 @@ class StatisticalDataProcessor:
         print('\n')
 
     def print_number_of_vacancies(self):
+        """Печатает динамику количества вакансий по годам"""
         data = pd.read_sql_query(
             "SELECT  strftime('%Y', published_at) as year, COUNT(name) as count FROM formatted GROUP BY strftime('%Y', published_at)",
             self.con)
@@ -204,6 +206,7 @@ class StatisticalDataProcessor:
         print('\n')
 
     def print_average_salary_profession(self):
+        """Печатает динамику уровня зарплат по годам для выбранной профессии"""
         data = pd.read_sql_query(
             f"SELECT  strftime('%Y', published_at) as year, ROUND(AVG(salary),4) as average_salary FROM formatted WHERE name LIKE '%{self.name_of_profession}%' GROUP BY strftime('%Y', published_at)",
             self.con)
@@ -211,13 +214,15 @@ class StatisticalDataProcessor:
         print('\n')
 
     def print_number_of_vacancies_profession(self):
+        """Печатает динамику количества вакансий по годам для выбранной профессии"""
         data = pd.read_sql_query(
             f"SELECT  strftime('%Y', published_at) as year, COUNT(name) as count FROM formatted WHERE name LIKE '%{self.name_of_profession}%' GROUP BY strftime('%Y', published_at)",
             self.con)
         print(data)
         print('\n')
 
-    def print_salary_level(self):
+    def print_salary_level_by_city(self):
+        """Печатает уровень зарплат по городам"""
         amount = self.con.execute('SELECT COUNT(*) FROM formatted').fetchone()[0]
         data = pd.read_sql_query(
             f"SELECT area_name, ROUND(AVG(salary),4) as average_salary FROM formatted GROUP BY area_name HAVING COUNT(name) >= {amount} / 100 ORDER BY AVG(salary) DESC LIMIT 10",
@@ -226,14 +231,13 @@ class StatisticalDataProcessor:
         print('\n')
 
     def print_vacancy_rate(self):
+        """Печатает долю вакансий по городам"""
         amount = self.con.execute('SELECT COUNT(*) FROM formatted').fetchone()[0]
         data = pd.read_sql_query(
             f"SELECT  area_name, ROUND(CAST(COUNT(name) AS FLOAT) / {amount},4) as rate  FROM formatted GROUP BY area_name HAVING COUNT(name) >= {amount}/ 100 ORDER BY COUNT(name) / {amount} DESC LIMIT 10",
             self.con)
         print(data)
         print('\n')
-
-
 
     def initialize_statistics_by_region(self):
         """Собирает статистику по уровеню зарплат по городам, доли вакансий по городам, уровню зарплат по годам для выбранной профессии и региона, количества вакансий по годам для выбранной профессии и региона """

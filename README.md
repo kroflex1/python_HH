@@ -129,69 +129,73 @@ for i in range(1000000):
 
 ## Задание 3.5.3 <a name="3_5_3"></a> 
 Программа по выводу данных
+
 ```Python
     def initialize_statistics_from_database(self):
-        file_name = input('Введите название файла: ')
-        self.name_of_profession = input("Введите название профессии:  ")
-        vacancy_controller= Vacancies_Controller()
-        vacancy_controller.create_formatted_file(file_name)
+    file_name = input('Введите название файла: ')
+    self.name_of_profession = input("Введите название профессии:  ")
+    vacancy_controller = Vacancies_Controller()
+    vacancy_controller.create_formatted_file(file_name)
+
+    self.con = sqlite3.connect('currency_dynamic.sqlite')
+
+    self.print_average_salary_from_database()
+    self.print_number_of_vacancies()
+    self.print_average_salary_profession()
+    self.print_number_of_vacancies_profession()
+
+    self.print_salary_level_by_city()
+    self.print_vacancy_rate()
 
 
-
-        self.con = sqlite3.connect('currency_dynamic.sqlite')
-
-        self.print_average_salary_from_database()
-        self.print_number_of_vacancies()
-        self.print_average_salary_profession()
-        self.print_number_of_vacancies_profession()
-
-        self.print_salary_level()
-        self.print_vacancy_rate()
+def print_average_salary_from_database(self):
+    data = pd.read_sql_query(
+        "SELECT strftime('%Y', published_at) as year, ROUND(AVG(salary), 4) as average_salary FROM formatted GROUP BY strftime('%Y', published_at)",
+        self.con)
+    print(data)
+    print('\n')
 
 
-    def print_average_salary_from_database(self):
-        data = pd.read_sql_query(
-            "SELECT strftime('%Y', published_at) as year, ROUND(AVG(salary), 4) as average_salary FROM formatted GROUP BY strftime('%Y', published_at)",
-            self.con)
-        print(data)
-        print('\n')
+def print_number_of_vacancies(self):
+    data = pd.read_sql_query(
+        "SELECT  strftime('%Y', published_at) as year, COUNT(name) as count FROM formatted GROUP BY strftime('%Y', published_at)",
+        self.con)
+    print(data)
+    print('\n')
 
-    def print_number_of_vacancies(self):
-        data = pd.read_sql_query(
-            "SELECT  strftime('%Y', published_at) as year, COUNT(name) as count FROM formatted GROUP BY strftime('%Y', published_at)",
-            self.con)
-        print(data)
-        print('\n')
 
-    def print_average_salary_profession(self):
-        data = pd.read_sql_query(
-            f"SELECT  strftime('%Y', published_at) as year, ROUND(AVG(salary),4) as average_salary FROM formatted WHERE name LIKE '%{self.name_of_profession}%' GROUP BY strftime('%Y', published_at)",
-            self.con)
-        print(data)
-        print('\n')
+def print_average_salary_profession(self):
+    data = pd.read_sql_query(
+        f"SELECT  strftime('%Y', published_at) as year, ROUND(AVG(salary),4) as average_salary FROM formatted WHERE name LIKE '%{self.name_of_profession}%' GROUP BY strftime('%Y', published_at)",
+        self.con)
+    print(data)
+    print('\n')
 
-    def print_number_of_vacancies_profession(self):
-        data = pd.read_sql_query(
-            f"SELECT  strftime('%Y', published_at) as year, COUNT(name) as count FROM formatted WHERE name LIKE '%{self.name_of_profession}%' GROUP BY strftime('%Y', published_at)",
-            self.con)
-        print(data)
-        print('\n')
 
-    def print_salary_level(self):
-        amount = self.con.execute('SELECT COUNT(*) FROM formatted').fetchone()[0]
-        data = pd.read_sql_query(
-            f"SELECT area_name, ROUND(AVG(salary),4) as average_salary FROM formatted GROUP BY area_name HAVING COUNT(name) >= {amount} / 100 ORDER BY AVG(salary) DESC LIMIT 10",
-            self.con)
-        print(data)
-        print('\n')
+def print_number_of_vacancies_profession(self):
+    data = pd.read_sql_query(
+        f"SELECT  strftime('%Y', published_at) as year, COUNT(name) as count FROM formatted WHERE name LIKE '%{self.name_of_profession}%' GROUP BY strftime('%Y', published_at)",
+        self.con)
+    print(data)
+    print('\n')
 
-    def print_vacancy_rate(self):
-        amount = self.con.execute('SELECT COUNT(*) FROM formatted').fetchone()[0]
-        data = pd.read_sql_query(
-            f"SELECT  area_name, ROUND(CAST(COUNT(name) AS FLOAT) / {amount},4) as rate  FROM formatted GROUP BY area_name HAVING COUNT(name) >= {amount}/ 100 ORDER BY COUNT(name) / {amount} DESC LIMIT 10",
-            self.con)
-        print(data)
-        print('\n')
+
+def print_salary_level(self):
+    amount = self.con.execute('SELECT COUNT(*) FROM formatted').fetchone()[0]
+    data = pd.read_sql_query(
+        f"SELECT area_name, ROUND(AVG(salary),4) as average_salary FROM formatted GROUP BY area_name HAVING COUNT(name) >= {amount} / 100 ORDER BY AVG(salary) DESC LIMIT 10",
+        self.con)
+    print(data)
+    print('\n')
+
+
+def print_vacancy_rate(self):
+    amount = self.con.execute('SELECT COUNT(*) FROM formatted').fetchone()[0]
+    data = pd.read_sql_query(
+        f"SELECT  area_name, ROUND(CAST(COUNT(name) AS FLOAT) / {amount},4) as rate  FROM formatted GROUP BY area_name HAVING COUNT(name) >= {amount}/ 100 ORDER BY COUNT(name) / {amount} DESC LIMIT 10",
+        self.con)
+    print(data)
+    print('\n')
 ```
 
 ![image](https://user-images.githubusercontent.com/48649189/209555810-28484d05-d44a-4294-b9e1-0871b0437c17.png)

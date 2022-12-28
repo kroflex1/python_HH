@@ -73,6 +73,13 @@ class Vacancies_Controller:
             return x
 
     def get_currency_coefficient_from_db(self, currency_name, current_date):
+        """Получает коэффициент валлюты из базы данных
+            Args:
+                currency_name(str): название валюты
+                current_date(str): текущая дата в формате  Y-m
+            Returns:
+                float: коэффициент валюты
+        """
         if currency_name == 'RUR':
             return 1
         cursorObj = self.con.cursor()

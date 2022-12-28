@@ -7,8 +7,8 @@ from Separator import Separator
 
 
 if __name__ == "__main__":
-    x = StatisticalDataProcessor()
-    x.initialize_statistics_from_database()
+    statistic= StatisticalDataProcessor()
+    statistic.initialize_statistics_from_database()
 
 
 
