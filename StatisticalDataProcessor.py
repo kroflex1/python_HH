@@ -1,10 +1,11 @@
 import math
 import pandas as pd
-import multiprocessing
 import concurrent.futures
 import os.path
+import sqlite3
 
 from Separator import Separator
+from Vacancies_Controller import Vacancies_Controller
 
 
 class StatisticalDataProcessor:
@@ -24,6 +25,7 @@ class StatisticalDataProcessor:
     def __init__(self):
         """Инициализирует объект StatisticalDataProcessor"""
         self.name_of_profession = None
+        self.con = None
         self.years = None
         self.folder_name = None
         self.main_df = None
@@ -62,26 +64,6 @@ class StatisticalDataProcessor:
         self.salary_level = {}
         self.vacancy_rate = {}
         self.initialize_city_statistics()
-
-    def initialize_statistics_by_region(self):
-        """Собирает статистику по уровеню зарплат по городам, доли вакансий по городам, уровню зарплат по годам для выбранной профессии и региона, количества вакансий по годам для выбранной профессии и региона """
-        file_name = input("Введите название файла: ")
-        self.name_of_profession = input("Введите название профессии: ")
-        self.region = input("Введите название региона: ")
-
-        separator = Separator()
-        separator.create_files_separated_by_years(file_name)
-        self.years = list(separator.unique_years)
-        self.folder_name = separator.folder_name
-        self.main_df = separator.main_df
-
-        self.salary_level = {}
-        self.vacancy_rate = {}
-        self.initialize_city_statistics()
-
-        self.average_salary_profession_region = {}
-        self.number_of_vacancies_profession_region = {}
-        self.initialize_year_and_region_statistics()
 
     def print_statistic(self):
         """Выводит вcю имеющиеся статистику"""
@@ -153,39 +135,6 @@ class StatisticalDataProcessor:
         df_share = df_share.head(10)
         self.vacancy_rate = dict(zip(df_share['area_name'], round(df_share['share'], 4)))
 
-    def initialize_year_and_region_statistics(self):
-        """Добавляет в словари статистик значения из файла
-        """
-        with concurrent.futures.ProcessPoolExecutor(max_workers=3) as executor:
-            wait_complete = []
-            for task in self.years:
-                future = executor.submit(self.get_statistic_by_year_and_region, task)
-                wait_complete.append(future)
-
-        for res in concurrent.futures.as_completed(wait_complete):
-            result = res.result()
-            year = result[0]
-            self.average_salary_profession_region[year] = result[1]
-            self.number_of_vacancies_profession_region[year] = result[2]
-
-        self.average_salary_profession_region = dict(sorted(self.average_salary_profession_region.items()))
-        self.number_of_vacancies_profession_region = dict(sorted(self.number_of_vacancies_profession_region.items()))
-
-    def get_statistic_by_year_and_region(self, year):
-        """Возвращает статистку за год в порядке:
-            Год,
-            Среднее значение зарплаты за год в заданном регионе,
-            Количество вакансий за год в заданном регионе.
-        """
-        file_path = rf"{self.folder_name}\part_{year}.csv"
-        if os.path.exists(file_path):
-            df = pd.read_csv(file_path)
-            df = df[(df["name"].str.contains(self.name_of_profession)) & (df["area_name"] == self.region)]
-
-            average_salary = math.floor(df["salary"].mean())
-            vacancy_rate = len(df.index)
-            return [year, average_salary, vacancy_rate]
-
     def get_final_year_statistics(self):
         """Возвращает статистку по зарплате и количеству вакансий в словари
         Returns:
@@ -220,3 +169,121 @@ class StatisticalDataProcessor:
             list<str>: список
         """
         return ', '.join([f'{key}: {value}' for key, value in dic.items()])
+
+    def initialize_statistics_from_database(self):
+        file_name = input('Введите название файла: ')
+        self.name_of_profession = input("Введите название профессии:  ")
+        vacancy_controller= Vacancies_Controller()
+        vacancy_controller.create_formatted_file(file_name)
+
+
+
+        self.con = sqlite3.connect('currency_dynamic.sqlite')
+
+        self.print_average_salary_from_database()
+        self.print_number_of_vacancies()
+        self.print_average_salary_profession()
+        self.print_number_of_vacancies_profession()
+
+        self.print_salary_level()
+        self.print_vacancy_rate()
+
+
+    def print_average_salary_from_database(self):
+        data = pd.read_sql_query(
+            "SELECT strftime('%Y', published_at) as year, ROUND(AVG(salary), 4) as average_salary FROM formatted GROUP BY strftime('%Y', published_at)",
+            self.con)
+        print(data)
+        print('\n')
+
+    def print_number_of_vacancies(self):
+        data = pd.read_sql_query(
+            "SELECT  strftime('%Y', published_at) as year, COUNT(name) as count FROM formatted GROUP BY strftime('%Y', published_at)",
+            self.con)
+        print(data)
+        print('\n')
+
+    def print_average_salary_profession(self):
+        data = pd.read_sql_query(
+            f"SELECT  strftime('%Y', published_at) as year, ROUND(AVG(salary),4) as average_salary FROM formatted WHERE name LIKE '%{self.name_of_profession}%' GROUP BY strftime('%Y', published_at)",
+            self.con)
+        print(data)
+        print('\n')
+
+    def print_number_of_vacancies_profession(self):
+        data = pd.read_sql_query(
+            f"SELECT  strftime('%Y', published_at) as year, COUNT(name) as count FROM formatted WHERE name LIKE '%{self.name_of_profession}%' GROUP BY strftime('%Y', published_at)",
+            self.con)
+        print(data)
+        print('\n')
+
+    def print_salary_level(self):
+        amount = self.con.execute('SELECT COUNT(*) FROM formatted').fetchone()[0]
+        data = pd.read_sql_query(
+            f"SELECT area_name, ROUND(AVG(salary),4) as average_salary FROM formatted GROUP BY area_name HAVING COUNT(name) >= {amount} / 100 ORDER BY AVG(salary) DESC LIMIT 10",
+            self.con)
+        print(data)
+        print('\n')
+
+    def print_vacancy_rate(self):
+        amount = self.con.execute('SELECT COUNT(*) FROM formatted').fetchone()[0]
+        data = pd.read_sql_query(
+            f"SELECT  area_name, ROUND(CAST(COUNT(name) AS FLOAT) / {amount},4) as rate  FROM formatted GROUP BY area_name HAVING COUNT(name) >= {amount}/ 100 ORDER BY COUNT(name) / {amount} DESC LIMIT 10",
+            self.con)
+        print(data)
+        print('\n')
+
+
+
+    def initialize_statistics_by_region(self):
+        """Собирает статистику по уровеню зарплат по городам, доли вакансий по городам, уровню зарплат по годам для выбранной профессии и региона, количества вакансий по годам для выбранной профессии и региона """
+        file_name = input("Введите название файла: ")
+        self.name_of_profession = input("Введите название профессии: ")
+        self.region = input("Введите название региона: ")
+
+        separator = Separator()
+        separator.create_files_separated_by_years(file_name)
+        self.years = list(separator.unique_years)
+        self.folder_name = separator.folder_name
+        self.main_df = separator.main_df
+
+        self.salary_level = {}
+        self.vacancy_rate = {}
+        self.initialize_city_statistics()
+
+        self.average_salary_profession_region = {}
+        self.number_of_vacancies_profession_region = {}
+        self.initialize_year_and_region_statistics()
+
+    def initialize_year_and_region_statistics(self):
+        """Добавляет в словари статистик значения из файла
+        """
+        with concurrent.futures.ProcessPoolExecutor(max_workers=3) as executor:
+            wait_complete = []
+            for task in self.years:
+                future = executor.submit(self.get_statistic_by_year_and_region, task)
+                wait_complete.append(future)
+
+        for res in concurrent.futures.as_completed(wait_complete):
+            result = res.result()
+            year = result[0]
+            self.average_salary_profession_region[year] = result[1]
+            self.number_of_vacancies_profession_region[year] = result[2]
+
+        self.average_salary_profession_region = dict(sorted(self.average_salary_profession_region.items()))
+        self.number_of_vacancies_profession_region = dict(sorted(self.number_of_vacancies_profession_region.items()))
+
+    def get_statistic_by_year_and_region(self, year):
+        """Возвращает статистку за год в порядке:
+            Год,
+            Среднее значение зарплаты за год в заданном регионе,
+            Количество вакансий за год в заданном регионе.
+        """
+        file_path = rf"{self.folder_name}\part_{year}.csv"
+        if os.path.exists(file_path):
+            df = pd.read_csv(file_path)
+            df = df[(df["name"].str.contains(self.name_of_profession)) & (df["area_name"] == self.region)]
+
+            average_salary = math.floor(df["salary"].mean())
+            vacancy_rate = len(df.index)
+            return [year, average_salary, vacancy_rate]

@@ -1,6 +1,6 @@
 import pandas as pd
 from datetime import datetime
-import numpy
+import sqlite3
 
 from Currency_Controller import Currency_Controller
 
@@ -16,6 +16,7 @@ class Vacancies_Controller:
         """Инициализирует класс Vacancies_Controller
             Args: file_name(str): файл с вакансиями"""
         self.currency_values = pd.read_csv("currency.csv")
+        self.con = sqlite3.connect('currency_dynamic.sqlite')
 
     def get_formatted_dataframe(self, vacancies):
         """Возвращает dataframe с преобразованной зарлатой
@@ -32,18 +33,22 @@ class Vacancies_Controller:
 
         return vacancies
 
-    def create_formatted_file(self,vacancy_file_name):
+    def create_formatted_file(self, vacancy_file_name):
         """Создаёт отфильтрованный по зарплатам csv файл"""
         self.df = pd.read_csv(vacancy_file_name)
         currency_controller = Currency_Controller()
         self.df = currency_controller.filter_vacancies_by_currency(self.df)
 
         self.df['salary'] = self.df.apply(self.get_salary, axis=1)
+        self.df['published_at'] =  self.df.apply(
+            lambda row: datetime.strptime(row['published_at'], '%Y-%m-%dT%H:%M:%S%z').strftime('%Y-%m-%d'),
+            axis=1)
         self.df = self.df.drop(columns=['salary_from', 'salary_to', 'salary_currency'])
 
-        self.df.to_csv(rf"formated.csv", index=False)
-
-
+        cursorObj = self.con.cursor()
+        cursorObj.execute('CREATE TABLE IF NOT EXISTS salary_info (name text, salary float, area_name text, published_at date)')
+        self.con.commit()
+        self.df.to_sql('formatted', self.con, if_exists='replace', index=False)
 
     def get_salary(self, row):
         """Возвращает зарплату в зависимости от полей salary_from, salary_to, salary_currency
@@ -52,21 +57,26 @@ class Vacancies_Controller:
         """
         if (pd.isna(row['salary_from']) and pd.isna(row['salary_to'])) or pd.isna(row['salary_currency']):
             return None
-        if row['salary_currency'] == 'RUR':
-            currency_value = 1
-        else:
-            current_date = datetime.strptime(row['published_at'], '%Y-%m-%dT%H:%M:%S%z')
-            currency_row = self.currency_values[self.currency_values['date'] == current_date.strftime('%Y-%m')]
-            currency_value = currency_row.iloc[0][row['salary_currency']]
-        if pd.isna(currency_value):
+        current_date = datetime.strptime(row['published_at'], '%Y-%m-%dT%H:%M:%S%z')
+        currency_coefficient = self.get_currency_coefficient_from_db(row['salary_currency'],
+                                                                     current_date.strftime('%Y-%m'))
+        if not currency_coefficient:
             return None
         if pd.isna(row['salary_from']):
-            x = float(row['salary_to']) * currency_value
+            x = float(row['salary_to']) * currency_coefficient
             return x
         if pd.isna(row['salary_to']):
-            x = float(row['salary_from']) * currency_value
+            x = float(row['salary_from']) * currency_coefficient
             return x
         else:
-            x = (float(row['salary_to']) + float(row['salary_from'])) / 2 * currency_value
+            x = (float(row['salary_to']) + float(row['salary_from'])) / 2 * currency_coefficient
             return x
 
+    def get_currency_coefficient_from_db(self, currency_name, current_date):
+        if currency_name == 'RUR':
+            return 1
+        cursorObj = self.con.cursor()
+        cursorObj.execute(f"SELECT {currency_name} FROM currency_dynamic WHERE date = '{current_date}'")
+        rows = cursorObj.fetchall()
+        for row in rows:
+            return row[0]
